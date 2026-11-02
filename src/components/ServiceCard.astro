@@ -1,0 +1,28 @@
+---
+interface Props {
+  service: {
+    slug: string;
+    short: string;
+    title: string;
+    summary: string;
+    benefits: readonly string[];
+  };
+  lang: string;
+}
+
+const { service, lang } = Astro.props;
+---
+
+<article class="service-card">
+  <div class="service-card-copy">
+    <p class="card-kicker">{service.short}</p>
+    <h3><a href={`/${lang}/services/${service.slug}/`}>{service.title}</a></h3>
+    <p>{service.summary}</p>
+    <ul class="service-card-benefits">
+      {service.benefits.map((benefit) => <li>{benefit}</li>)}
+    </ul>
+  </div>
+  <a class="text-link" href={`/${lang}/services/${service.slug}/`}>
+    {lang === "en" ? "Explore service" : "Conozca el servicio"} <span aria-hidden="true">↗</span>
+  </a>
+</article>

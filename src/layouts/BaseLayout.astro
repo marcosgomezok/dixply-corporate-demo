@@ -1,0 +1,47 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { content, locales, type Locale } from "../i18n/content";
+
+interface Props {
+  lang: Locale;
+  title: string;
+  description: string;
+  pathname: string;
+}
+
+const { lang, title, description, pathname } = Astro.props;
+const copy = content[lang];
+const canonical = new URL(pathname, Astro.site);
+const alternatePath = pathname.replace(/^\/(en|es)/, "");
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7f5ef" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    {locales.map((locale) => <link rel="alternate" hreflang={locale} href={new URL(`/${locale}${alternatePath}`, Astro.site)} />)}
+    <link rel="alternate" hreflang="x-default" href={new URL(`/en${alternatePath}`, Astro.site)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={copy.brand} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={lang === "en" ? "en_US" : "es_ES"} />
+    <title>{title}</title>
+  </head>
+  <body id="top">
+    <Header lang={lang} copy={copy} pathname={pathname} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} copy={copy} />
+  </body>
+</html>

@@ -1,0 +1,67 @@
+---
+import type { Locale, SiteContent } from "../i18n/content";
+
+interface Props {
+  lang: Locale;
+  copy: SiteContent;
+  pathname: string;
+}
+
+const { lang, copy, pathname } = Astro.props;
+const currentPath = pathname.replace(/^\/(en|es)/, "") || "/";
+---
+
+<a class="skip-link" href="#main">{copy.skip}</a>
+<header class:list={["site-header", { "site-header-home": currentPath === "/" }]}>
+  <div class="header-inner">
+    <a class="wordmark" href={`/${lang}/`} aria-label={`${copy.brand} — ${copy.tagline}`}>
+      <span class="brand-symbol" aria-hidden="true">V<span>.</span></span>
+      <span class="brand-name">{copy.brand}</span>
+    </a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation" data-close-label={copy.closeMenu}>
+      <span class="menu-toggle-text" data-open-label={copy.menu}>{copy.menu}</span>
+      <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <nav id="primary-navigation" class="primary-navigation" aria-label={lang === "en" ? "Main navigation" : "Navegación principal"}>
+      {
+        copy.nav.map((item) => {
+          const href = `/${lang}${item.href}`;
+          const active = currentPath === item.href || currentPath.startsWith(item.href);
+          return <a class:list={["nav-link", { "is-active": active }]} href={href} aria-current={active ? "page" : undefined}>{item.label}</a>;
+        })
+      }
+      <div class="nav-tools">
+        <div class="language-switch" aria-label={copy.language}>
+          <a href={`/en${pathname.replace(/^\/(en|es)/, "")}`} lang="en" aria-current={lang === "en" ? "true" : undefined}>EN</a>
+          <span aria-hidden="true">/</span>
+          <a href={`/es${pathname.replace(/^\/(en|es)/, "")}`} lang="es" aria-current={lang === "es" ? "true" : undefined}>ES</a>
+        </div>
+        <a class="button button-dark nav-cta" href={`/${lang}/contact/`}>{copy.contactLink}<span aria-hidden="true">↗</span></a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>(".menu-toggle");
+  const navigation = document.querySelector<HTMLElement>("#primary-navigation");
+  const toggleText = document.querySelector<HTMLElement>(".menu-toggle-text");
+
+  if (toggle && navigation && toggleText) {
+    const closeLabel = toggle.dataset.closeLabel;
+    toggle.addEventListener("click", () => {
+      const isOpen = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!isOpen));
+      toggleText.textContent = isOpen ? toggleText.dataset.openLabel ?? "" : closeLabel ?? "";
+      navigation.classList.toggle("is-open", !isOpen);
+    });
+
+    navigation.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("a")) {
+        toggle.setAttribute("aria-expanded", "false");
+        toggleText.textContent = toggleText.dataset.openLabel ?? "";
+        navigation.classList.remove("is-open");
+      }
+    });
+  }
+</script>

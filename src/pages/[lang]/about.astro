@@ -1,0 +1,55 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Callout from "../../components/Callout.astro";
+import { content, locales, type Locale } from "../../i18n/content";
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const copy = content[lang];
+const page = copy.pages.about;
+---
+
+<BaseLayout lang={lang} title={`${lang === "en" ? "About" : "Nosotros"} | ${copy.brand}`} description={page.intro} pathname={`/${lang}/about/`}>
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <p class="eyebrow"><span class="signal-mark" aria-hidden="true"></span>{page.eyebrow}</p>
+      <h1>{page.title}</h1>
+      <p class="page-hero-intro">{page.intro}</p>
+    </div>
+  </section>
+  <section class="section about-story">
+    <div class="section-aside"><span class="eyebrow">{page.backgroundTitle}</span></div>
+    <div><p class="large-copy">{page.background}</p></div>
+  </section>
+  <section class="mission-band">
+    <p class="eyebrow">{page.missionLabel}</p>
+    <h2>{page.missionTitle}</h2>
+    <div><h3>{page.approachTitle}</h3><p>{page.approach}</p></div>
+  </section>
+  <section class="section principles-section">
+    <div class="section-heading"><div><p class="eyebrow">{lang === "en" ? "What guides us" : "Lo que nos guía"}</p><h2>{page.principlesTitle}</h2></div></div>
+    <div class="principle-grid">
+      {page.principles.map((principle) => (
+        <article class="principle-card">
+          <h3>{principle.title}</h3>
+          <p>{principle.body}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+  <section class="team-section">
+    <div class="team-heading"><div><p class="eyebrow">{page.teamLabel}</p><h2>{page.teamTitle}</h2></div><p class="disclaimer">{page.teamNote}</p></div>
+    <div class="team-grid">
+      {copy.team.map((member, index) => (
+        <article class="team-card">
+          <div class:list={["team-portrait", `portrait-${index + 1}`]} aria-hidden="true"><span>{member.name.split(" ").map((part) => part[0]).join("")}</span></div>
+          <p class="team-role">{member.role}</p><h3>{member.name}</h3><p>{member.focus}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+  <div class="section"><Callout lang={lang} title={page.closeTitle} body={page.closeBody} cta={page.closeCta} /></div>
+</BaseLayout>

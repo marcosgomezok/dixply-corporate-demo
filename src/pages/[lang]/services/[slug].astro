@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Callout from "../../../components/Callout.astro";
+import { content, locales, type Locale } from "../../../i18n/content";
+
+export function getStaticPaths() {
+  return locales.flatMap((lang) =>
+    content[lang].serviceItems.map((service) => ({
+      params: { lang, slug: service.slug },
+    })),
+  );
+}
+
+const lang = Astro.params.lang as Locale;
+const copy = content[lang];
+const service = copy.serviceItems.find((item) => item.slug === Astro.params.slug);
+
+if (!service) throw new Error(`Unknown service: ${Astro.params.slug}`);
+
+const benefitsTitle = lang === "en" ? "What changes for your business" : "Qué puede mejorar en su negocio";
+const deliverablesTitle = lang === "en" ? "What we work on together" : "En qué trabajaremos juntos";
+const methodTitle = lang === "en" ? "A practical, collaborative method" : "Una metodología práctica y colaborativa";
+const pathname = `/${lang}/services/${service.slug}/`;
+---
+
+<BaseLayout lang={lang} title={`${service.short} | ${copy.brand}`} description={service.summary} pathname={pathname}>
+  <section class="page-hero detail-hero">
+    <div class="page-hero-inner">
+      <p class="eyebrow"><a href={`/${lang}/services/`}>{lang === "en" ? "Services" : "Servicios"}</a><span aria-hidden="true"> / </span>{service.short}</p>
+      <h1>{service.title}</h1>
+      <p class="page-hero-intro">{service.intro}</p>
+      <a class="button button-dark" href={`/${lang}/contact/`}>{service.cta}<span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+  <section class="section detail-grid-section">
+    <article class="detail-block">
+      <p class="eyebrow">{benefitsTitle}</p>
+      <ul class="check-list">{service.benefits.map((benefit) => <li>{benefit}</li>)}</ul>
+    </article>
+    <article class="detail-block">
+      <p class="eyebrow">{deliverablesTitle}</p>
+      <ul class="deliverables-list">{service.deliverables.map((item) => <li>{item}</li>)}</ul>
+    </article>
+  </section>
+  <section class="method-detail">
+    <div><p class="eyebrow">{methodTitle}</p><h2>{lang === "en" ? "A grounded approach that builds ownership." : "Un enfoque realista que desarrolla autonomía."}</h2></div>
+    <p>{service.method}</p>
+  </section>
+  <div class="section"><Callout lang={lang} title={service.cta} body={service.summary} cta={lang === "en" ? "Talk with our team" : "Hable con nuestro equipo"} /></div>
+</BaseLayout>

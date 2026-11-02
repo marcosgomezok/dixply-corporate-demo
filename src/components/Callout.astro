@@ -1,0 +1,19 @@
+---
+interface Props {
+  lang: string;
+  title: string;
+  body: string;
+  cta: string;
+}
+
+const { lang, title, body, cta } = Astro.props;
+---
+
+<section class="callout">
+  <div class="callout-copy">
+    <p class="eyebrow">{lang === "en" ? "A useful next step" : "Un siguiente paso útil"}</p>
+    <h2>{title}</h2>
+    <p>{body}</p>
+  </div>
+  <a class="button button-light" href={`/${lang}/contact/`}>{cta}<span aria-hidden="true">↗</span></a>
+</section>

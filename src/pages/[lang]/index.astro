@@ -1,0 +1,148 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ServiceCard from "../../components/ServiceCard.astro";
+import { content, locales, type Locale } from "../../i18n/content";
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const copy = content[lang];
+const home = copy.home;
+const title = `${copy.brand} — ${home.title}`;
+const description = home.intro;
+const titleLines = home.title.split(". ");
+---
+
+<BaseLayout lang={lang} title={title} description={description} pathname={`/${lang}/`}>
+  <section class="hero hero-home">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">{home.businessType}</p>
+        <h1>{titleLines.map((line, index) => <span>{line}{index === 0 ? "." : ""}</span>)}</h1>
+        <p class="hero-intro">{home.intro}</p>
+        <div class="button-row">
+          <a class="button button-light" href={`/${lang}/services/`}>{home.primary}<span aria-hidden="true">↗</span></a>
+          <a class="button button-outline" href={`/${lang}/contact/`}>{home.secondary}</a>
+        </div>
+      </div>
+      <aside class="hero-proof" aria-label={home.proofLabel}>
+        <p class="eyebrow">{home.proofLabel}</p>
+        <div class="proof-grid">
+          {home.proofStats.map((stat) => (
+            <div class="proof-stat">
+              <strong>{stat.value}</strong>
+              <span>{stat.label}</span>
+            </div>
+          ))}
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section services-section">
+    <div class="home-section-heading">
+      <p class="eyebrow">{home.servicesLabel}</p>
+      <h2>{home.servicesTitle}</h2>
+      <p>{home.servicesIntro}</p>
+    </div>
+    <div class="service-list">
+      {copy.serviceItems.map((service) => <ServiceCard service={service} lang={lang} />)}
+    </div>
+    <a class="text-link section-link" href={`/${lang}/services/`}>{home.servicesLink}<span aria-hidden="true">↗</span></a>
+  </section>
+
+  <section class="value-section">
+    <div class="value-intro">
+      <p class="eyebrow">{home.valueLabel}</p>
+      <h2>{home.valueTitle}</h2>
+      <p>{home.valueIntro}</p>
+    </div>
+    <div class="value-list">
+      {home.values.map((value) => (
+        <article class="value-item">
+          <h3>{value.title}</h3>
+          <p>{value.body}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section method-section">
+    <div class="home-section-heading">
+      <p class="eyebrow">{home.methodLabel}</p>
+      <h2>{home.methodTitle}</h2>
+      <p>{home.methodIntro}</p>
+    </div>
+    <div class="method-grid">
+      {home.steps.map((step, index) => (
+        <>
+          <article class="method-step">
+            <h3>{step.title}</h3><p>{step.body}</p>
+          </article>
+          {index < home.steps.length - 1 && <span class="method-arrow" aria-hidden="true">→</span>}
+        </>
+      ))}
+    </div>
+  </section>
+
+  <section class="case-section">
+    <div class="home-section-heading">
+      <p class="eyebrow">{home.casesLabel}</p>
+      <h2>{home.casesTitle}</h2>
+      <p>{home.casesIntro}</p>
+    </div>
+    <div class="case-grid">
+      {home.cases.map((study, index) => (
+        <article class:list={["case-card", { "case-card-dark": index === 0 }]}>
+          <p class="case-industry">{study.industry}</p>
+          <h3>{study.name}</h3>
+          <p class="case-result">{study.result}</p>
+          <p class="case-metric">{study.metric}</p>
+          <p class="case-body">{study.body}</p>
+          <span class="case-service">{study.service}</span>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="testimonial-section">
+    <div class="home-section-heading">
+      <p class="eyebrow">{home.testimonialLabel}</p>
+      <h2>{lang === "en" ? "Better work, in their own words." : "Mejoras que se notan, en sus palabras."}</h2>
+      <p>{home.testimonialIntro}</p>
+    </div>
+    <div class="testimonial-grid">
+      {home.testimonials.map((testimonial) => (
+        <article class="testimonial-card">
+          <span class="quote-mark" aria-hidden="true">“</span>
+          <blockquote>{testimonial.quote}</blockquote>
+          <p class="testimonial-by">{testimonial.by}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section faq-section home-faq-section">
+    <div class="home-section-heading">
+      <p class="eyebrow">{home.faqLabel}</p>
+      <h2>{home.faqTitle}</h2>
+      <p>{home.faqIntro}</p>
+    </div>
+    <div class="faq-list">
+      {home.faqs.map((faq) => (
+        <details class="faq-item">
+          <summary>{faq.question}<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p>{faq.answer}</p>
+        </details>
+      ))}
+    </div>
+    <a class="text-link section-link" href={`/${lang}/services/`}>{home.faqLink}<span aria-hidden="true">↗</span></a>
+  </section>
+
+  <section class="home-close">
+    <div><p class="eyebrow">{lang === "en" ? "Start with a conversation" : "Empecemos con una conversación"}</p><h2>{home.finalTitle}</h2><p>{home.finalBody}</p></div>
+    <a class="button button-light" href={`/${lang}/contact/`}>{home.finalCta}<span aria-hidden="true">↗</span></a>
+  </section>
+</BaseLayout>

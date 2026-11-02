@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import ServiceCard from "../../../components/ServiceCard.astro";
+import Callout from "../../../components/Callout.astro";
+import { content, locales, type Locale } from "../../../i18n/content";
+
+export function getStaticPaths() {
+  return locales.map((lang) => ({ params: { lang } }));
+}
+
+const lang = Astro.params.lang as Locale;
+const copy = content[lang];
+const page = copy.pages.services;
+const title = `${lang === "en" ? "Services" : "Servicios"} | ${copy.brand}`;
+---
+
+<BaseLayout lang={lang} title={title} description={page.intro} pathname={`/${lang}/services/`}>
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <p class="eyebrow"><span class="signal-mark" aria-hidden="true"></span>{page.eyebrow}</p>
+      <h1>{page.title}</h1>
+      <p class="page-hero-intro">{page.intro}</p>
+    </div>
+  </section>
+  <section class="section services-page-list">
+    <div class="service-list">
+      {copy.serviceItems.map((service) => <ServiceCard service={service} lang={lang} />)}
+    </div>
+  </section>
+  <section class="section faq-section">
+    <div class="section-heading">
+      <div><p class="eyebrow">{lang === "en" ? "Good to know" : "Información útil"}</p><h2>{lang === "en" ? "Questions we often hear." : "Preguntas frecuentes."}</h2></div>
+    </div>
+    <div class="faq-list">
+      {copy.faqs.map((faq) => (
+        <details class="faq-item">
+          <summary>{faq.question}<span class="faq-icon" aria-hidden="true"></span></summary>
+          <p>{faq.answer}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+  <div class="section"><Callout lang={lang} title={page.closeTitle} body={page.closeBody} cta={page.closeCta} /></div>
+</BaseLayout>

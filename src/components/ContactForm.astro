@@ -1,0 +1,140 @@
+---
+import type { Locale, SiteContent } from "../i18n/content";
+
+interface Props {
+  lang: Locale;
+  copy: SiteContent;
+  services: SiteContent["serviceItems"];
+}
+
+const { lang, copy, services } = Astro.props;
+const labels = copy.pages.contact;
+---
+
+<form class="contact-form" novalidate data-contact-form data-success-title={labels.successTitle} data-success-body={labels.successBody} data-draft-link={labels.draftLink} data-error-title={labels.errorTitle} data-error-required={labels.errors.required} data-error-email={labels.errors.email} data-error-message-short={labels.errors.messageShort} data-error-message-long={labels.errors.messageLong} data-name-label={labels.name} data-email-label={labels.email} data-company-label={labels.company} data-service-label={labels.service} data-message-label={labels.message} data-brand={copy.brand} data-lang={lang}>
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="contact-name">{labels.name} <span aria-hidden="true">*</span></label>
+      <input id="contact-name" name="name" type="text" autocomplete="name" required maxlength="100" aria-describedby="error-name" />
+      <p class="field-error" id="error-name"></p>
+    </div>
+    <div class="form-field">
+      <label for="contact-email">{labels.email} <span aria-hidden="true">*</span></label>
+      <input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254" aria-describedby="error-email" />
+      <p class="field-error" id="error-email"></p>
+    </div>
+    <div class="form-field">
+      <label for="contact-company">{labels.company} <span aria-hidden="true">*</span></label>
+      <input id="contact-company" name="company" type="text" autocomplete="organization" required maxlength="120" aria-describedby="error-company" />
+      <p class="field-error" id="error-company"></p>
+    </div>
+    <div class="form-field">
+      <label for="contact-service">{labels.service} <span aria-hidden="true">*</span></label>
+      <select id="contact-service" name="service" required aria-describedby="error-service">
+        <option value="">{labels.servicePlaceholder}</option>
+        {services.map((service) => <option value={service.short}>{service.short}</option>)}
+      </select>
+      <p class="field-error" id="error-service"></p>
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="contact-message">{labels.message} <span aria-hidden="true">*</span></label>
+      <textarea id="contact-message" name="message" rows="5" required minlength="20" maxlength="2000" aria-describedby="error-message message-count"></textarea>
+      <div class="field-meta">
+        <p class="field-error" id="error-message"></p>
+        <span id="message-count" class="character-count" aria-live="polite">{lang === "en" ? "0 / 2,000" : "0 / 2.000"}</span>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="button button-dark" type="submit">{labels.submit}<span aria-hidden="true">↗</span></button>
+    <p>{labels.privacy}</p>
+  </div>
+  <div class="form-status" role="status" aria-live="polite" tabindex="-1" hidden>
+    <strong class="form-status-title"></strong>
+    <span class="form-status-body"></span>
+    <a class="form-draft-link" hidden></a>
+  </div>
+</form>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>("[data-contact-form]");
+
+  if (form) {
+    const inputs = Array.from(form.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea"));
+    const status = form.querySelector<HTMLElement>(".form-status");
+    const statusTitle = form.querySelector<HTMLElement>(".form-status-title");
+    const statusBody = form.querySelector<HTMLElement>(".form-status-body");
+    const draftLink = form.querySelector<HTMLAnchorElement>(".form-draft-link");
+    const message = form.querySelector<HTMLTextAreaElement>("#contact-message");
+    const counter = form.querySelector<HTMLElement>("#message-count");
+
+    const localized = (key: string) => form.dataset[key] ?? "";
+    const setError = (input: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) => {
+      const error = form.querySelector<HTMLElement>(`#error-${input.name}`);
+      if (!error) return false;
+      let text = "";
+
+      if (!input.value.trim()) text = localized("errorRequired");
+      else if (input.name === "email" && !input.validity.valid) text = localized("errorEmail");
+      else if (input.name === "message" && input.value.trim().length < 20) text = localized("errorMessageShort");
+      else if (input.name === "message" && input.value.length > 2000) text = localized("errorMessageLong");
+
+      error.textContent = text;
+      input.setAttribute("aria-invalid", String(Boolean(text)));
+      return Boolean(text);
+    };
+
+    inputs.forEach((input) => {
+      input.addEventListener("blur", () => setError(input));
+      input.addEventListener("input", () => {
+        if (input.getAttribute("aria-invalid") === "true") setError(input);
+      });
+    });
+
+    message?.addEventListener("input", () => {
+      if (counter) counter.textContent = `${message.value.length.toLocaleString(form.dataset.lang)} / 2,000`;
+    });
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const invalid = inputs.filter(setError);
+
+      if (invalid.length > 0) {
+        if (status) {
+          status.hidden = false;
+          status.dataset.state = "error";
+        }
+        if (statusTitle) statusTitle.textContent = localized("errorTitle");
+        if (statusBody) statusBody.textContent = "";
+        invalid[0]?.focus();
+        return;
+      }
+
+      const values = new FormData(form);
+      const email = String(values.get("email") ?? "");
+      const subject = `${localized("brand")} ${form.dataset.lang === "es" ? "consulta" : "inquiry"} — ${String(values.get("company") ?? "")}`;
+      const body = [
+        `${localized("nameLabel")}: ${String(values.get("name") ?? "")}`,
+        `${localized("emailLabel")}: ${email}`,
+        `${localized("companyLabel")}: ${String(values.get("company") ?? "")}`,
+        `${localized("serviceLabel")}: ${String(values.get("service") ?? "")}`,
+        "",
+        `${localized("messageLabel")}:`,
+        String(values.get("message") ?? ""),
+      ].join("\n");
+
+      if (status) {
+        status.hidden = false;
+        status.dataset.state = "success";
+      }
+      if (statusTitle) statusTitle.textContent = localized("successTitle");
+      if (statusBody) statusBody.textContent = localized("successBody");
+      if (draftLink) {
+        draftLink.href = `mailto:hello@vaqzeryn.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        draftLink.textContent = localized("draftLink");
+        draftLink.hidden = false;
+      }
+      status?.focus();
+    });
+  }
+</script>
